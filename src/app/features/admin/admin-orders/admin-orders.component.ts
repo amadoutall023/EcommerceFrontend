@@ -47,27 +47,22 @@ import { LucideAngularModule } from 'lucide-angular';
 
           <div class="mt-4 flex items-center justify-between gap-3">
             <span
-              [ngClass]="{
-                'bg-yellow-100 text-yellow-800': order.status === 'pending',
-                'bg-green-100 text-green-800': order.status === 'paid',
-                'bg-blue-100 text-blue-800': order.status === 'shipped',
-                'bg-gray-100 text-gray-800': order.status === 'delivered'
-              }"
+              [ngClass]="statusClasses(order.status)"
               class="px-3 py-1 text-[10px] font-black uppercase tracking-widest"
             >
-              {{ order.status }}
+              {{ statusLabel(order.status) }}
             </span>
 
             <select
               (change)="updateStatus(order.id, $any($event.target).value)"
+              [value]="order.status"
               class="min-w-0 bg-brand-beige/30 px-3 py-2 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-1 focus:ring-brand-blue"
             >
-              <option value="" disabled selected>Modifier</option>
               <option value="pending">En attente</option>
-              <option value="paid">Paye</option>
-              <option value="shipped">Expedie</option>
-              <option value="delivered">Livre</option>
-              <option value="cancelled">Annule</option>
+              <option value="paid">Payee</option>
+              <option value="shipped">Expediee</option>
+              <option value="delivered">Livree</option>
+              <option value="cancelled">Annulee</option>
             </select>
           </div>
 
@@ -170,29 +165,24 @@ import { LucideAngularModule } from 'lucide-angular';
               <td class="px-6 py-4 font-black italic">{{ order.total_amount | currency:'XOF' }}</td>
               <td class="px-6 py-4">
                 <span 
-                  [ngClass]="{
-                    'bg-yellow-100 text-yellow-800': order.status === 'pending',
-                    'bg-green-100 text-green-800': order.status === 'paid',
-                    'bg-blue-100 text-blue-800': order.status === 'shipped',
-                    'bg-gray-100 text-gray-800': order.status === 'delivered'
-                  }"
+                  [ngClass]="statusClasses(order.status)"
                   class="px-3 py-1 text-[10px] font-black uppercase tracking-widest"
                 >
-                  {{ order.status }}
+                  {{ statusLabel(order.status) }}
                 </span>
                 <lucide-angular [name]="selectedOrderId() === order.id ? 'chevron-up' : 'chevron-down'" class="w-3 h-3 ml-2 inline opacity-20"></lucide-angular>
               </td>
               <td class="px-6 py-4 text-right" (click)="$event.stopPropagation()">
                 <select 
                   (change)="updateStatus(order.id, $any($event.target).value)"
+                  [value]="order.status"
                   class="bg-brand-beige/30 border-none text-[10px] font-black uppercase tracking-widest px-2 py-1 outline-none focus:ring-1 focus:ring-brand-blue"
                 >
-                  <option value="" disabled selected>Modifier</option>
                   <option value="pending">En attente</option>
-                  <option value="paid">Payé</option>
-                  <option value="shipped">Expédié</option>
-                  <option value="delivered">Livré</option>
-                  <option value="cancelled">Annulé</option>
+                  <option value="paid">Payee</option>
+                  <option value="shipped">Expediee</option>
+                  <option value="delivered">Livree</option>
+                  <option value="cancelled">Annulee</option>
                 </select>
               </td>
             </tr>
@@ -261,6 +251,15 @@ export class AdminOrdersComponent implements OnInit {
   }
 
   updateStatus(id: number, status: string) {
+    if (!status) {
+      return;
+    }
+
+    const current = this.orders().find(order => order.id === id)?.status;
+    if (current === status) {
+      return;
+    }
+
     this.adminService.updateOrderStatus(id, status).subscribe(() => {
       this.loadOrders();
     });
@@ -269,10 +268,36 @@ export class AdminOrdersComponent implements OnInit {
   buildWhatsappLink(order: { id: number; customer_name?: string | null; customer_phone?: string | null; status: string }): string {
     const name = order.customer_name?.trim() || `client #${order.id}`;
     const message = encodeURIComponent(
-      `Bonjour ${name}, ici l'equipe TaTrend. Nous vous contactons au sujet de votre commande #ORD-${order.id} actuellement "${order.status}".`
+      `Bonjour ${name}, ici l'equipe TaTrend. Nous vous contactons au sujet de votre commande #ORD-${order.id} actuellement "${this.statusLabel(order.status)}".`
     );
 
     return `https://wa.me/${this.formatWhatsappNumber(order.customer_phone ?? '')}?text=${message}`;
+  }
+
+  statusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      pending: 'En attente',
+      paid: 'Payee',
+      shipped: 'Expediee',
+      delivered: 'Livree',
+      cancelled: 'Annulee',
+      confirmed: 'Confirmee',
+    };
+
+    return labels[status] ?? status;
+  }
+
+  statusClasses(status: string): string {
+    const classes: Record<string, string> = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      paid: 'bg-emerald-100 text-emerald-800',
+      confirmed: 'bg-green-100 text-green-800',
+      shipped: 'bg-blue-100 text-blue-800',
+      delivered: 'bg-gray-100 text-gray-800',
+      cancelled: 'bg-red-100 text-red-800',
+    };
+
+    return classes[status] ?? 'bg-gray-100 text-gray-800';
   }
 
   formatWhatsappNumber(phone: string): string {
