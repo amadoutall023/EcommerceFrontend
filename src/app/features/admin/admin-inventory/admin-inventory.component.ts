@@ -12,21 +12,50 @@ import { NotificationService } from '../../../core/services/notification.service
   standalone: true,
   imports: [CommonModule, LucideAngularModule, FormsModule],
   template: `
-    <div class="max-w-7xl mx-auto px-4 py-12">
-      <div class="flex justify-between items-end mb-12">
+    <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 sm:py-10">
+      <div class="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 class="text-6xl font-black italic tracking-tighter uppercase mb-2">INVENTAIRE</h1>
-          <p class="text-brand-brown font-bold text-xs tracking-widest uppercase">Stock & Produits</p>
+          <p class="mb-3 text-[10px] font-black uppercase tracking-[0.35em] text-brand-brown sm:text-xs">Stock & Produits</p>
+          <h1 class="text-3xl font-black italic tracking-tighter uppercase sm:text-5xl lg:text-6xl">Inventaire</h1>
         </div>
         <button 
           (click)="showModal.set(true); resetForm()"
-          class="bg-brand-blue text-white px-8 py-4 font-black italic tracking-tighter text-xl hover:bg-brand-brown transition-colors uppercase"
+          class="w-full bg-brand-blue px-6 py-4 text-center text-base font-black italic uppercase tracking-tighter text-white transition-colors hover:bg-brand-brown sm:w-auto sm:px-8 sm:text-xl"
         >
           Nouveau Produit +
         </button>
       </div>
 
-      <div class="bg-white border border-brand-blue/5 overflow-hidden">
+      <div class="space-y-4 lg:hidden">
+        <div *ngFor="let p of products()" class="border border-brand-blue/10 bg-white p-4 shadow-sm">
+          <div class="flex items-start gap-4">
+            <div class="h-20 w-20 flex-shrink-0 overflow-hidden border border-brand-blue/10 bg-gray-100">
+              <img *ngIf="p.image_url" [src]="p.image_url" class="h-full w-full object-cover">
+              <lucide-angular *ngIf="!p.image_url" name="shopping-bag" class="m-auto h-5 w-5 text-gray-300"></lucide-angular>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-lg font-black italic tracking-tighter">{{ p.name }}</p>
+              <p class="mt-1 text-[10px] uppercase tracking-[0.24em] text-gray-400">{{ p.slug }}</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="bg-brand-beige px-2 py-1 text-[10px] font-bold uppercase tracking-widest">{{ p.category_name }}</span>
+                <span class="bg-brand-blue/5 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-blue">Stock: {{ p.stock }}</span>
+              </div>
+              <p class="mt-3 text-base font-black italic text-brand-blue">{{ p.price | currency:'XOF' }}</p>
+            </div>
+          </div>
+
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <button (click)="editProduct(p)" class="border border-brand-blue px-4 py-3 text-xs font-black uppercase tracking-[0.22em] text-brand-blue transition-colors hover:bg-brand-blue hover:text-white">
+              Modifier
+            </button>
+            <button (click)="deleteProduct(p.id)" class="border border-red-300 px-4 py-3 text-xs font-black uppercase tracking-[0.22em] text-red-500 transition-colors hover:bg-red-500 hover:text-white">
+              Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hidden overflow-hidden border border-brand-blue/5 bg-white lg:block">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-brand-blue text-white uppercase text-[10px] tracking-[0.2em] font-black">
@@ -139,38 +168,41 @@ import { NotificationService } from '../../../core/services/notification.service
       </div>
 
       <!-- Categories Section -->
-      <div class="mb-24 mt-24">
-        <div class="flex justify-between items-end mb-8">
+      <div class="mb-24 mt-16 sm:mt-24">
+        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 class="text-4xl font-black italic tracking-tighter uppercase mb-2">CATÉGORIES</h2>
             <p class="text-brand-brown font-bold text-[10px] tracking-widest uppercase">Structure du catalogue</p>
           </div>
           <button 
             (click)="showCatModal.set(true); resetCatForm()"
-            class="bg-brand-brown text-white px-6 py-3 font-black italic tracking-tighter text-sm hover:bg-brand-blue transition-colors uppercase"
+            class="w-full bg-brand-brown px-6 py-3 text-center text-sm font-black italic uppercase tracking-tighter text-white transition-colors hover:bg-brand-blue sm:w-auto"
           >
             Nouvelle Catégorie +
           </button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <div *ngFor="let cat of categories()" class="bg-white border border-brand-blue/10 p-0 flex justify-between items-center group overflow-hidden">
-            <div class="flex items-center space-x-4">
-              <div class="w-16 h-16 bg-gray-100 flex-shrink-0">
-                <img *ngIf="cat.image_url" [src]="cat.image_url" class="w-full h-full object-cover">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div *ngFor="let cat of categories()" class="group overflow-hidden border border-brand-blue/10 bg-white">
+            <div class="flex items-center justify-between gap-3 p-3">
+              <div class="flex min-w-0 items-center gap-4">
+                <div class="h-16 w-16 flex-shrink-0 bg-gray-100">
+                  <img *ngIf="cat.image_url" [src]="cat.image_url" class="w-full h-full object-cover">
+                  <lucide-angular *ngIf="!cat.image_url" name="image" class="m-auto h-5 w-5 text-gray-300"></lucide-angular>
+                </div>
+                <div class="min-w-0">
+                  <p class="font-black italic tracking-tighter uppercase leading-none">{{ cat.name }}</p>
+                  <p class="mt-1 text-[9px] text-gray-400 uppercase tracking-widest">{{ cat.slug }}</p>
+                </div>
               </div>
-              <div>
-                <p class="font-black italic tracking-tighter uppercase leading-none">{{ cat.name }}</p>
-                <p class="text-[9px] text-gray-400 uppercase tracking-widest">{{ cat.slug }}</p>
+              <div class="flex flex-col gap-2 sm:flex-row sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
+                <button (click)="editCategory(cat)" class="border border-brand-blue/20 px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-brand-blue hover:border-brand-blue hover:bg-brand-blue hover:text-white">
+                  Editer
+                </button>
+                <button (click)="deleteCategory(cat.id)" class="border border-red-200 px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-red-500 hover:bg-red-500 hover:text-white">
+                  Supprimer
+                </button>
               </div>
-            </div>
-            <div class="flex space-x-2 px-4 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button (click)="editCategory(cat)" class="text-brand-blue hover:text-brand-brown">
-                <lucide-angular name="menu" class="w-3 h-3"></lucide-angular>
-              </button>
-              <button (click)="deleteCategory(cat.id)" class="text-red-400 hover:text-red-700">
-                <lucide-angular name="x" class="w-3 h-3"></lucide-angular>
-              </button>
             </div>
           </div>
         </div>
