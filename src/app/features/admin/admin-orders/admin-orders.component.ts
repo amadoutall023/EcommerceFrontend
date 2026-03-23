@@ -113,7 +113,7 @@ import { LucideAngularModule } from 'lucide-angular';
                   Appeler
                 </a>
                 <a
-                  [href]="'https://wa.me/' + formatWhatsappNumber(order.customer_phone)"
+                  [href]="buildWhatsappLink(order)"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="border border-green-500 px-4 py-3 text-center text-xs font-black uppercase tracking-[0.22em] text-green-600 transition-colors hover:bg-green-500 hover:text-white"
@@ -157,7 +157,7 @@ import { LucideAngularModule } from 'lucide-angular';
                     Appeler
                   </a>
                   <a
-                    [href]="'https://wa.me/' + formatWhatsappNumber(order.customer_phone)"
+                    [href]="buildWhatsappLink(order)"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="border border-green-500 px-2 py-1 text-[9px] font-black uppercase tracking-[0.18em] text-green-600 transition-colors hover:bg-green-500 hover:text-white"
@@ -264,6 +264,15 @@ export class AdminOrdersComponent implements OnInit {
     this.adminService.updateOrderStatus(id, status).subscribe(() => {
       this.loadOrders();
     });
+  }
+
+  buildWhatsappLink(order: { id: number; customer_name?: string | null; customer_phone?: string | null; status: string }): string {
+    const name = order.customer_name?.trim() || `client #${order.id}`;
+    const message = encodeURIComponent(
+      `Bonjour ${name}, ici l'equipe TaTrend. Nous vous contactons au sujet de votre commande #ORD-${order.id} actuellement "${order.status}".`
+    );
+
+    return `https://wa.me/${this.formatWhatsappNumber(order.customer_phone ?? '')}?text=${message}`;
   }
 
   formatWhatsappNumber(phone: string): string {
