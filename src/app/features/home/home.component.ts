@@ -37,7 +37,7 @@ import { NotificationService } from '../../core/services/notification.service';
 
         <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 md:space-x-6 animate-fade-in-up animation-delay-600">
           <a routerLink="/products" class="group relative px-8 md:px-10 py-3 md:py-5 bg-brand-brown text-white font-bold rounded-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-brand-brown/50 hover:-translate-y-1">
-            <span class="relative z-10 uppercase text-sm tracking-wider">Acheter Maintenant</span>
+            <span class="relative z-10 uppercase text-sm tracking-wider">Acheter Maintenant teh tapoter </span>
             <div class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
           </a>
           
@@ -193,7 +193,7 @@ import { NotificationService } from '../../core/services/notification.service';
             <div class="flex items-center space-x-4">
               <div class="w-12 h-12 rounded-full bg-brand-blue/10 flex items-center justify-center font-black text-brand-blue">JD</div>
               <div>
-                <h4 class="font-black italic text-brand-blue uppercase tracking-tighter">Jean Dupont</h4>
+                <h4 class="font-black italic text-brand-blue uppercase tracking-tighter">EL hadji mbaye Tall</h4>
                 <p class="text-[10px] font-bold text-brand-brown uppercase tracking-widest">Client Fidèle</p>
               </div>
             </div>
@@ -216,8 +216,8 @@ import { NotificationService } from '../../core/services/notification.service';
             <div class="flex items-center space-x-4">
               <div class="w-12 h-12 rounded-full bg-brand-brown/10 flex items-center justify-center font-black text-brand-brown">SM</div>
               <div>
-                <h4 class="font-black italic text-brand-blue uppercase tracking-tighter">Sophie Martin</h4>
-                <p class="text-[10px] font-bold text-brand-brown uppercase tracking-widest">Acheteuse vérifiée</p>
+                <h4 class="font-black italic text-brand-blue uppercase tracking-tighter">Sophie Diaw</h4>
+                <p class="text-[10px] font-bold text-brand-brown uppercase tracking-widest">Acheteur vérifié</p>
               </div>
             </div>
           </div>
@@ -234,12 +234,12 @@ import { NotificationService } from '../../core/services/notification.service';
               <lucide-angular name="star" class="w-4 h-4 fill-current"></lucide-angular>
             </div>
             <p class="text-gray-600 italic leading-relaxed text-lg mb-8">
-              "J'adore l'univers de la marque. On sent une vraie passion derrière chaque produit. Le packaging est aussi soigné que les vêtements."
+              "J'adore tes t-shirt unique . On sent une vraie passion derrière le produit. Le packaging est aussi soigné que les vêtements."
             </p>
             <div class="flex items-center space-x-4">
               <div class="w-12 h-12 rounded-full bg-brand-blue/10 flex items-center justify-center font-black text-brand-blue">ML</div>
               <div>
-                <h4 class="font-black italic text-brand-blue uppercase tracking-tighter">Marc Leblanc</h4>
+                <h4 class="font-black italic text-brand-blue uppercase tracking-tighter">Ibou Fall</h4>
                 <p class="text-[10px] font-bold text-brand-brown uppercase tracking-widest">Fashion Enthusiast</p>
               </div>
             </div>
@@ -252,7 +252,7 @@ import { NotificationService } from '../../core/services/notification.service';
     <section id="localisation" class="py-16 md:py-24 bg-brand-blue">
       <div class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-12">
-          <h3 class="text-brand-beige font-bold tracking-[0.4em] uppercase text-xs mb-4">Venez nous rendre visite</h3>
+          <h3 class="text-brand-beige font-bold tracking-[0.4em] uppercase text-xs mb-4">Tapoter len live bi Venez nous rendre visite</h3>
           <h2 class="text-3xl md:text-5xl font-black italic tracking-tighter text-white uppercase">NOTRE BOUTIQUE</h2>
         </div>
 
@@ -275,11 +275,11 @@ import { NotificationService } from '../../core/services/notification.service';
               <div class="flex items-center space-x-4 text-sm text-gray-500">
                 <div class="flex items-center space-x-2">
                   <lucide-angular name="clock" class="w-4 h-4"></lucide-angular>
-                  <span>Lun-Sam: 9h-20h</span>
+                  <span>Lun-Dim: 9h-20h</span>
                 </div>
                 <div class="flex items-center space-x-2">
                   <lucide-angular name="phone" class="w-4 h-4"></lucide-angular>
-                  <span>+221 77 123 45 67</span>
+                  <span>+221 78 454 11 51</span>
                 </div>
               </div>
             </div>
