@@ -129,10 +129,6 @@ import { NotificationService } from '../../../core/services/notification.service
                 <input type="text" [(ngModel)]="formData.name" name="name" required class="w-full bg-brand-beige/30 border-2 border-transparent focus:border-brand-blue outline-none px-4 py-3 font-bold">
               </div>
               <div>
-                <label class="block text-xs font-black uppercase tracking-widest mb-2">Slug</label>
-                <input type="text" [(ngModel)]="formData.slug" name="slug" required class="w-full bg-brand-beige/30 border-2 border-transparent focus:border-brand-blue outline-none px-4 py-3 font-bold text-sm">
-              </div>
-              <div>
                 <label class="block text-xs font-black uppercase tracking-widest mb-2">Catégorie</label>
                 <select [(ngModel)]="formData.category_id" name="category_id" required class="w-full bg-brand-beige/30 border-2 border-transparent focus:border-brand-blue outline-none px-4 py-3 font-bold">
                   <option *ngFor="let c of categories()" [value]="c.id">{{ c.name | uppercase }}</option>
@@ -235,10 +231,6 @@ import { NotificationService } from '../../../core/services/notification.service
               <label class="block text-xs font-black uppercase tracking-widest mb-2">Nom de la catégorie</label>
               <input type="text" [(ngModel)]="catFormData.name" name="cat_name" required class="w-full bg-brand-beige/30 border-2 border-transparent focus:border-brand-blue outline-none px-4 py-3 font-bold">
             </div>
-            <div>
-              <label class="block text-xs font-black uppercase tracking-widest mb-2">Slug</label>
-              <input type="text" [(ngModel)]="catFormData.slug" name="cat_slug" required class="w-full bg-brand-beige/30 border-2 border-transparent focus:border-brand-blue outline-none px-4 py-3 font-bold text-sm">
-            </div>
 
             <button type="submit" class="w-full bg-brand-brown text-white py-5 font-black text-xl italic tracking-tighter hover:bg-brand-blue transition-colors uppercase">
               Enregistrer
@@ -266,7 +258,6 @@ export class AdminInventoryComponent implements OnInit {
 
   formData = {
     name: '',
-    slug: '',
     category_id: 0,
     price: 0,
     original_price: null as number | null,
@@ -313,7 +304,6 @@ export class AdminInventoryComponent implements OnInit {
     this.selectedFile = null;
     this.formData = {
       name: '',
-      slug: '',
       category_id: this.categories()[0]?.id || 0,
       price: 0,
       original_price: null,
@@ -330,7 +320,6 @@ export class AdminInventoryComponent implements OnInit {
     this.selectedFile = null;
     this.formData = {
       name: p.name,
-      slug: p.slug,
       category_id: p.category_id,
       price: p.price,
       original_price: p.original_price || null,
@@ -394,27 +383,26 @@ export class AdminInventoryComponent implements OnInit {
   // Category Management
   showCatModal = signal(false);
   editingCatId = signal<number | null>(null);
-  catFormData = { name: '', slug: '' };
+  catFormData = { name: '' };
 
   resetCatForm() {
     this.editingCatId.set(null);
     this.catImagePreview.set(null);
     this.selectedCatFile = null;
-    this.catFormData = { name: '', slug: '' };
+    this.catFormData = { name: '' };
   }
 
   editCategory(cat: Category) {
     this.editingCatId.set(cat.id);
     this.catImagePreview.set(cat.image_url || null);
     this.selectedCatFile = null;
-    this.catFormData = { name: cat.name, slug: cat.slug };
+    this.catFormData = { name: cat.name };
     this.showCatModal.set(true);
   }
 
   saveCategory() {
     const data = new FormData();
     data.append('name', this.catFormData.name);
-    data.append('slug', this.catFormData.slug);
     if (this.selectedCatFile) {
       data.append('image', this.selectedCatFile);
     }
