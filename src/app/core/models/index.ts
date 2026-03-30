@@ -40,9 +40,9 @@ export interface Product {
 
 export interface CartItem {
     id: number;
-    product_id: number;
+    product_id: number | null;
     product_name: string;
-    product_image: string;
+    product_image?: string | null;
     quantity: number;
     unit_price: number;
     selected_size?: string;
@@ -61,7 +61,7 @@ export interface GuestCheckoutPayload {
     phone: string;
     name?: string;
     items: Array<{
-        product_id: number;
+        product_id: number | null;
         quantity: number;
         selected_size?: string;
         selected_color?: string;
@@ -72,7 +72,7 @@ export interface Order {
     id: number;
     user_id?: number;
     total_amount: number;
-    status: 'pending' | 'confirmed' | 'shipped' | 'delivered';
+    status: 'pending' | 'paid' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
     created_at: string;
     customer_name?: string | null;
     customer_phone?: string | null;

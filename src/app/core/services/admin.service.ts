@@ -10,6 +10,8 @@ export interface AdminStats {
     total_users: number;
 }
 
+export type OrderStatus = Order['status'];
+
 @Injectable({
     providedIn: 'root'
 })
@@ -22,10 +24,10 @@ export class AdminService {
     }
 
     getOrders() {
-        return this.http.get<{ data: any[] }>(`${this.apiUrl}/orders`);
+        return this.http.get<{ data: Order[] }>(`${this.apiUrl}/orders`);
     }
 
-    updateOrderStatus(orderId: number, status: string) {
+    updateOrderStatus(orderId: number, status: OrderStatus) {
         return this.http.put(`${this.apiUrl}/orders/${orderId}/status`, { status });
     }
 
@@ -43,17 +45,13 @@ export class AdminService {
         return this.http.delete(`${this.apiUrl}/products/${id}`);
     }
 
-    createCategory(category: any) {
+    createCategory(category: FormData) {
         return this.http.post<{ data: Category }>(`${this.apiUrl}/categories`, category);
     }
 
-    updateCategory(id: number, category: any) {
-        // If it's FormData, we use POST with _method=PUT for better compatibility
-        if (category instanceof FormData) {
-            category.append('_method', 'PUT');
-            return this.http.post<{ data: Category }>(`${this.apiUrl}/categories/${id}`, category);
-        }
-        return this.http.put<{ data: Category }>(`${this.apiUrl}/categories/${id}`, category);
+    updateCategory(id: number, category: FormData) {
+        category.append('_method', 'PUT');
+        return this.http.post<{ data: Category }>(`${this.apiUrl}/categories/${id}`, category);
     }
 
     deleteCategory(id: number) {
@@ -61,6 +59,6 @@ export class AdminService {
     }
 
     getSubscribers() {
-        return this.http.get<{ data: any[] }>(`${this.apiUrl}/subscribers`);
+        return this.http.get<{ data: Array<{ email: string; created_at: string }> }>(`${this.apiUrl}/subscribers`);
     }
 }

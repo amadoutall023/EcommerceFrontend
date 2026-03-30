@@ -40,7 +40,7 @@ import { RouterModule } from '@angular/router';
               <div *ngFor="let item of order.items" class="flex justify-between items-center group/item">
                 <div class="flex items-center space-x-6">
                   <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden shrink-0">
-                    <img [src]="'https://images.unsplash.com/photo-1523381235208-e7bd991480cc?q=80&w=200'" class="w-full h-full object-cover">
+                    <img [src]="item.product_image || 'https://images.unsplash.com/photo-1523381235208-e7bd991480cc?q=80&w=200'" class="w-full h-full object-cover">
                   </div>
                   <div>
                     <h5 class="font-black italic text-lg tracking-tighter uppercase text-brand-blue">{{ item.product_name }}</h5>

@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AdminService } from '../../../core/services/admin.service';
+import { AdminService, OrderStatus } from '../../../core/services/admin.service';
+import { Order } from '../../../core/models';
 import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
@@ -237,7 +238,7 @@ import { LucideAngularModule } from 'lucide-angular';
 })
 export class AdminOrdersComponent implements OnInit {
   private adminService = inject(AdminService);
-  orders = signal<any[]>([]);
+  orders = signal<Order[]>([]);
   selectedOrderId = signal<number | null>(null);
 
   ngOnInit() {
@@ -250,7 +251,7 @@ export class AdminOrdersComponent implements OnInit {
     });
   }
 
-  updateStatus(id: number, status: string) {
+  updateStatus(id: number, status: OrderStatus) {
     if (!status) {
       return;
     }

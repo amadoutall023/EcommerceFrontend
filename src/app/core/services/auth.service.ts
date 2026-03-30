@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, map, tap } from 'rxjs';
+import { catchError, finalize, map, Observable, of, shareReplay, tap } from 'rxjs';
 import { User, AuthResponse } from '../models';
 import { environment } from '../../../environments/environment';
 import { Router } from '@angular/router';
@@ -11,14 +11,14 @@ import { jwtDecode } from 'jwt-decode';
 })
 export class AuthService {
     private currentUserSignal = signal<User | null>(null);
+    private userLoadRequest$?: Observable<User | null>;
     currentUser = this.currentUserSignal.asReadonly();
 
     constructor(private http: HttpClient, private router: Router) {
-        const token = this.getToken();
-        if (token) {
-            // Decode and check expiry if needed
-            // Simple check for now
-            this.loadUser().subscribe();
+        if (this.isAuthenticated()) {
+            this.ensureCurrentUserLoaded().subscribe();
+        } else if (this.getToken()) {
+            localStorage.removeItem('token');
         }
     }
 
@@ -60,6 +60,37 @@ export class AuthService {
     isAdmin(): boolean {
         const user = this.currentUserSignal();
         return user?.role === 'admin';
+    }
+
+    ensureCurrentUserLoaded(): Observable<User | null> {
+        const token = this.getToken();
+
+        if (!token) {
+            this.currentUserSignal.set(null);
+            return of(null);
+        }
+
+        const currentUser = this.currentUserSignal();
+        if (currentUser) {
+            return of(currentUser);
+        }
+
+        if (!this.userLoadRequest$) {
+            this.userLoadRequest$ = this.loadUser().pipe(
+                map(res => res.data),
+                catchError(() => {
+                    localStorage.removeItem('token');
+                    this.currentUserSignal.set(null);
+                    return of(null);
+                }),
+                finalize(() => {
+                    this.userLoadRequest$ = undefined;
+                }),
+                shareReplay(1)
+            );
+        }
+
+        return this.userLoadRequest$;
     }
 
     private handleAuth(res: AuthResponse) {
