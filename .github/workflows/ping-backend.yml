@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Ping TaTrend Backend
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" "https://ecommercebackend-h1hz.onrender.com/api/products")
+          response=$(curl -sS -L --max-time 30 -o /dev/null -w "%{http_code}" "https://ecommercebackend-h1hz.onrender.com/up")
           echo "HTTP Status: $response"
           if [ "$response" -eq 200 ]; then
             echo "Backend actif!"
