@@ -58,7 +58,21 @@ import { NotificationService } from '../../core/services/notification.service';
         <a routerLink="/products" class="text-brand-brown font-bold border-b-2 border-brand-brown pb-1 hover:text-brand-blue hover:border-brand-blue transition-all">Tout voir</a>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div *ngIf="isLoadingCategories()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div *ngFor="let item of skeletonCategories" class="relative aspect-[4/5] overflow-hidden rounded-2xl bg-brand-blue/[0.04]">
+          <div class="absolute inset-0 animate-pulse bg-gradient-to-br from-brand-blue/10 via-brand-beige/30 to-brand-brown/10"></div>
+          <div class="absolute inset-x-0 bottom-0 p-8">
+            <div class="mb-3 h-3 w-20 rounded-full bg-white/70"></div>
+            <div class="h-10 w-32 rounded-2xl bg-white/80"></div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoadingCategories() && categories().length === 0" class="rounded-3xl border border-brand-blue/10 bg-brand-beige/30 px-6 py-10 text-center">
+        <p class="text-sm font-bold uppercase tracking-[0.24em] text-brand-brown">Les catégories arrivent bientôt.</p>
+      </div>
+
+      <div *ngIf="!isLoadingCategories() && categories().length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         <div *ngFor="let cat of categories(); let i = index" class="group relative aspect-[4/5] overflow-hidden bg-gray-100 cursor-pointer rounded-2xl transition-all duration-300 hover:shadow-2xl animate-fade-in-up" [style.animation-delay]="i * 100 + 'ms'" [routerLink]="['/products']" [queryParams]="{category_id: cat.id}">
           <!-- Image Layer -->
           <img [src]="cat.image_url" [alt]="cat.name" loading="eager" class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
@@ -95,7 +109,25 @@ import { NotificationService } from '../../core/services/notification.service';
         </a>
       </div>
 
-      <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-8 md:gap-y-12">
+      <div *ngIf="isLoadingProducts()" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-8 md:gap-y-12">
+        <div *ngFor="let item of skeletonProducts" class="animate-pulse">
+          <div class="relative aspect-[3/4] overflow-hidden rounded-2xl bg-brand-blue/[0.04] mb-6">
+            <div class="absolute inset-0 bg-gradient-to-br from-brand-blue/10 via-brand-beige/30 to-brand-brown/10"></div>
+            <div class="absolute left-4 top-4 h-6 w-14 rounded-full bg-white/80"></div>
+          </div>
+          <div class="text-center md:text-left">
+            <div class="mb-2 h-3 w-20 rounded-full bg-brand-brown/20"></div>
+            <div class="mb-3 h-6 w-32 rounded-full bg-brand-blue/10"></div>
+            <div class="h-6 w-24 rounded-full bg-brand-blue/15"></div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoadingProducts() && recentProducts().length === 0" class="rounded-3xl border border-brand-blue/10 bg-brand-beige/30 px-6 py-10 text-center">
+        <p class="text-sm font-bold uppercase tracking-[0.24em] text-brand-brown">Aucun produit à afficher pour le moment.</p>
+      </div>
+
+      <div *ngIf="!isLoadingProducts() && recentProducts().length > 0" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-8 md:gap-y-12">
         <div *ngFor="let product of recentProducts(); let i = index" 
              class="group cursor-pointer animate-fade-in-up" 
              [style.animation-delay]="i * 100 + 'ms'"
@@ -309,18 +341,36 @@ export class HomeComponent implements OnInit {
 
   categories = signal<Category[]>([]);
   recentProducts = signal<Product[]>([]);
+  isLoadingCategories = signal(true);
+  isLoadingProducts = signal(true);
   subscribeEmail = '';
   isSubscribing = signal(false);
+  skeletonCategories = Array.from({ length: 4 });
+  skeletonProducts = Array.from({ length: 8 });
 
   ngOnInit() {
-    this.productService.getCategories().subscribe(res => {
-      this.categories.set(res);
-      this.cdr.detectChanges();
+    this.productService.getCategories().subscribe({
+      next: (res) => {
+        this.categories.set(res);
+        this.isLoadingCategories.set(false);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isLoadingCategories.set(false);
+        this.cdr.detectChanges();
+      }
     });
 
-    this.productService.getCatalog().subscribe(res => {
-      this.recentProducts.set(res.products.slice(0, 8));
-      this.cdr.detectChanges();
+    this.productService.getCatalog().subscribe({
+      next: (res) => {
+        this.recentProducts.set(res.products.slice(0, 8));
+        this.isLoadingProducts.set(false);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isLoadingProducts.set(false);
+        this.cdr.detectChanges();
+      }
     });
   }
 

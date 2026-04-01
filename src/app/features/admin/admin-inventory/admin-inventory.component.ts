@@ -206,7 +206,7 @@ import { NotificationService } from '../../../core/services/notification.service
 
       <!-- Category Modal -->
       <div *ngIf="showCatModal()" class="fixed inset-0 bg-brand-blue/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-        <div class="bg-white max-w-md w-full p-12 shadow-2xl relative">
+        <div class="bg-white max-w-md w-full p-8 sm:p-12 shadow-2xl relative max-h-[90vh] overflow-y-auto">
           <button (click)="showCatModal.set(false)" class="absolute top-8 right-8 text-brand-blue hover:rotate-90 transition-transform">
              <lucide-angular name="x" class="w-8 h-8"></lucide-angular>
           </button>
@@ -218,22 +218,25 @@ import { NotificationService } from '../../../core/services/notification.service
           <form (ngSubmit)="saveCategory()" class="space-y-6">
             <div class="mb-6">
               <label class="block text-xs font-black uppercase tracking-widest mb-2">Image de la catégorie</label>
-              <div (click)="catFileInput.click()" class="w-full aspect-video bg-brand-beige/30 border-2 border-dashed border-brand-blue/20 flex flex-col items-center justify-center cursor-pointer hover:border-brand-blue transition-colors relative overflow-hidden">
+              <label for="category-image-input" class="block w-full aspect-video bg-brand-beige/30 border-2 border-dashed border-brand-blue/20 flex flex-col items-center justify-center cursor-pointer hover:border-brand-blue transition-colors relative overflow-hidden">
                 <img *ngIf="catImagePreview()" [src]="catImagePreview()" class="absolute inset-0 w-full h-full object-cover">
                 <div *ngIf="!catImagePreview()" class="text-center">
                   <lucide-angular name="image" class="w-8 h-8 mx-auto mb-2 text-brand-blue/40"></lucide-angular>
                   <p class="text-[10px] font-black uppercase tracking-widest text-brand-blue/60">Cliquer pour uploader</p>
                 </div>
-              </div>
-              <input #catFileInput type="file" (change)="onCatFileSelected($event)" class="hidden" accept="image/*">
+              </label>
+              <input id="category-image-input" #catFileInput type="file" (change)="onCatFileSelected($event)" class="sr-only" accept="image/*">
+              <p *ngIf="selectedCatFile" class="mt-2 text-[10px] font-bold uppercase tracking-widest text-brand-blue/60">
+                {{ selectedCatFile.name }}
+              </p>
             </div>
             <div>
               <label class="block text-xs font-black uppercase tracking-widest mb-2">Nom de la catégorie</label>
               <input type="text" [(ngModel)]="catFormData.name" name="cat_name" required class="w-full bg-brand-beige/30 border-2 border-transparent focus:border-brand-blue outline-none px-4 py-3 font-bold">
             </div>
 
-            <button type="submit" class="w-full bg-brand-brown text-white py-5 font-black text-xl italic tracking-tighter hover:bg-brand-blue transition-colors uppercase">
-              Enregistrer
+            <button type="submit" [disabled]="isSavingCategory()" class="w-full bg-brand-brown text-white py-5 font-black text-xl italic tracking-tighter hover:bg-brand-blue transition-colors uppercase disabled:cursor-not-allowed disabled:opacity-60">
+              {{ isSavingCategory() ? 'Enregistrement...' : 'Enregistrer' }}
             </button>
           </form>
         </div>
@@ -255,6 +258,7 @@ export class AdminInventoryComponent implements OnInit {
 
   catImagePreview = signal<string | null>(null);
   selectedCatFile: File | null = null;
+  isSavingCategory = signal(false);
 
   formData = {
     name: '',
@@ -401,19 +405,41 @@ export class AdminInventoryComponent implements OnInit {
   }
 
   saveCategory() {
+    if (!this.editingCatId() && !this.selectedCatFile) {
+      this.notification.warning('Ajoute une image pour la nouvelle catégorie.');
+      return;
+    }
+
     const data = new FormData();
     data.append('name', this.catFormData.name);
     if (this.selectedCatFile) {
       data.append('image', this.selectedCatFile);
     }
 
+    this.isSavingCategory.set(true);
+
     const obs = this.editingCatId()
       ? this.adminService.updateCategory(this.editingCatId()!, data)
       : this.adminService.createCategory(data);
 
-    obs.subscribe(() => {
-      this.showCatModal.set(false);
-      this.loadData();
+    obs.subscribe({
+      next: () => {
+        this.showCatModal.set(false);
+        this.resetCatForm();
+        this.loadData();
+        this.notification.success('Catégorie enregistrée avec succès');
+      },
+      error: (err) => {
+        const details = err.error?.details
+          ? Object.values(err.error.details).flat().join(' ')
+          : '';
+        const message = details || err.error?.message || 'Erreur lors de l\'enregistrement de la catégorie';
+        this.notification.error(message, 'Erreur catégorie');
+        this.isSavingCategory.set(false);
+      },
+      complete: () => {
+        this.isSavingCategory.set(false);
+      }
     });
   }
 
