@@ -1,13 +1,15 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService } from '../../../core/services/admin.service';
+import { BackButtonComponent } from '../../../shared/back-button/back-button.component';
 
 @Component({
     selector: 'app-admin-subscribers',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, BackButtonComponent],
     template: `
-        <div class="p-6">
+        <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 sm:py-10">
+            <app-back-button fallbackUrl="/admin" label="Retour dashboard" class="mb-6 block"></app-back-button>
             <h1 class="text-2xl font-bold mb-6">Abonnés à la newsletter</h1>
             
             @if (loading()) {

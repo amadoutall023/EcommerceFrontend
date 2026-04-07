@@ -4,13 +4,18 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { LucideAngularModule } from 'lucide-angular';
+import { BackButtonComponent } from '../../../shared/back-button/back-button.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, RouterModule, FormsModule, LucideAngularModule, BackButtonComponent],
   template: `
-    <div class="min-h-[80vh] flex items-center justify-center px-4">
+    <div class="min-h-[80vh] px-4 py-10">
+      <div class="mx-auto mb-6 max-w-md">
+        <app-back-button fallbackUrl="/" label="Retour accueil"></app-back-button>
+      </div>
+      <div class="flex items-center justify-center">
       <div class="max-w-md w-full bg-white p-12 shadow-2xl border border-brand-blue/5">
         <div class="text-center mb-10">
           <h1 class="text-4xl font-black italic tracking-tighter uppercase mb-2">Connexion</h1>
@@ -62,6 +67,7 @@ import { LucideAngularModule } from 'lucide-angular';
           </p>
         </div>
       </div>
+      </div>
     </div>
   `
 })
@@ -98,4 +104,3 @@ export class LoginComponent {
     });
   }
 }
-

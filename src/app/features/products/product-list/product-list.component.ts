@@ -7,15 +7,17 @@ import { AuthService } from '../../../core/services/auth.service';
 import { Product, Category } from '../../../core/models';
 import { LucideAngularModule } from 'lucide-angular';
 import { NotificationService } from '../../../core/services/notification.service';
+import { BackButtonComponent } from '../../../shared/back-button/back-button.component';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule, BackButtonComponent],
   template: `
     <div class="max-w-7xl mx-auto px-4 py-12">
       <!-- Breadcrumbs & Title -->
       <div class="mb-12">
+        <app-back-button fallbackUrl="/" label="Retour accueil" class="mb-6 block"></app-back-button>
         <h1 class="text-5xl font-black italic tracking-tighter mb-4">NOTRE COLLECTION</h1>
         <div class="flex flex-wrap gap-3">
           <button 

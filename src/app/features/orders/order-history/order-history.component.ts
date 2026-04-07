@@ -4,13 +4,15 @@ import { OrderService } from '../../../core/services/order.service';
 import { Order } from '../../../core/models';
 import { LucideAngularModule } from 'lucide-angular';
 import { RouterModule } from '@angular/router';
+import { BackButtonComponent } from '../../../shared/back-button/back-button.component';
 
 @Component({
   selector: 'app-order-history',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, RouterModule],
+  imports: [CommonModule, LucideAngularModule, RouterModule, BackButtonComponent],
   template: `
     <div class="max-w-7xl mx-auto px-4 py-24">
+      <app-back-button fallbackUrl="/" label="Retour accueil" class="mb-8 block"></app-back-button>
       <h1 class="text-6xl font-black italic tracking-tighter mb-16 uppercase">MES COMMANDES</h1>
 
       <div class="space-y-6" *ngIf="orders().length > 0; else noOrders">

@@ -3,13 +3,15 @@ import { CommonModule } from '@angular/common';
 import { AdminService, OrderStatus } from '../../../core/services/admin.service';
 import { Order } from '../../../core/models';
 import { LucideAngularModule } from 'lucide-angular';
+import { BackButtonComponent } from '../../../shared/back-button/back-button.component';
 
 @Component({
   selector: 'app-admin-orders',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, BackButtonComponent],
   template: `
     <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 sm:py-10">
+      <app-back-button fallbackUrl="/admin" label="Retour dashboard" class="mb-6 block"></app-back-button>
       <div class="mb-8">
         <p class="mb-3 text-[10px] font-black uppercase tracking-[0.35em] text-brand-brown sm:text-xs">Suivi et Expedition</p>
         <h1 class="text-3xl font-black italic tracking-tighter uppercase sm:text-5xl lg:text-6xl">Gestion Commandes</h1>

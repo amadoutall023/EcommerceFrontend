@@ -6,13 +6,15 @@ import { CartService } from '../../../core/services/cart.service';
 import { Product } from '../../../core/models';
 import { LucideAngularModule } from 'lucide-angular';
 import { NotificationService } from '../../../core/services/notification.service';
+import { BackButtonComponent } from '../../../shared/back-button/back-button.component';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule, BackButtonComponent],
   template: `
     <div class="max-w-7xl mx-auto px-4 py-12 md:py-24" *ngIf="product() as p">
+      <app-back-button fallbackUrl="/products" label="Retour boutique" class="mb-8 block"></app-back-button>
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
         
         <!-- Left: Image Gallery (5 cols) -->

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService } from '../../../core/services/admin.service';
 import { ProductService } from '../../../core/services/product.service';
@@ -6,13 +6,15 @@ import { Product, Category } from '../../../core/models';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { NotificationService } from '../../../core/services/notification.service';
+import { BackButtonComponent } from '../../../shared/back-button/back-button.component';
 
 @Component({
   selector: 'app-admin-inventory',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, FormsModule],
+  imports: [CommonModule, LucideAngularModule, FormsModule, BackButtonComponent],
   template: `
     <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 sm:py-10">
+      <app-back-button fallbackUrl="/admin" label="Retour dashboard" class="mb-6 block"></app-back-button>
       <div class="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p class="mb-3 text-[10px] font-black uppercase tracking-[0.35em] text-brand-brown sm:text-xs">Stock & Produits</p>
@@ -26,8 +28,26 @@ import { NotificationService } from '../../../core/services/notification.service
         </button>
       </div>
 
+      <div class="mb-6 border border-brand-blue/10 bg-white p-4 sm:p-5">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div class="w-full lg:max-w-xl">
+            <label class="mb-2 block text-[10px] font-black uppercase tracking-[0.3em] text-brand-brown">Recherche Produits</label>
+            <input
+              type="text"
+              [ngModel]="productSearch()"
+              (ngModelChange)="updateProductSearch($event)"
+              placeholder="Nom, slug ou categorie"
+              class="w-full border border-brand-blue/10 bg-brand-beige/20 px-4 py-3 font-bold text-brand-blue outline-none transition-colors focus:border-brand-blue"
+            >
+          </div>
+          <p class="text-[10px] font-black uppercase tracking-[0.24em] text-gray-400">
+            {{ filteredProducts().length }} produit(s) • page {{ productPage() }} / {{ totalProductPages() }}
+          </p>
+        </div>
+      </div>
+
       <div class="space-y-4 lg:hidden">
-        <div *ngFor="let p of products()" class="border border-brand-blue/10 bg-white p-4 shadow-sm">
+        <div *ngFor="let p of paginatedProducts()" class="border border-brand-blue/10 bg-white p-4 shadow-sm">
           <div class="flex items-start gap-4">
             <div class="h-20 w-20 flex-shrink-0 overflow-hidden border border-brand-blue/10 bg-gray-100">
               <img *ngIf="p.image_url" [src]="p.image_url" class="h-full w-full object-cover">
@@ -53,6 +73,10 @@ import { NotificationService } from '../../../core/services/notification.service
             </button>
           </div>
         </div>
+
+        <div *ngIf="filteredProducts().length === 0" class="border border-dashed border-brand-blue/20 bg-white px-6 py-12 text-center">
+          <p class="text-lg font-black italic tracking-tighter uppercase text-brand-blue/30">Aucun produit trouve</p>
+        </div>
       </div>
 
       <div class="hidden overflow-hidden border border-brand-blue/5 bg-white lg:block">
@@ -68,7 +92,7 @@ import { NotificationService } from '../../../core/services/notification.service
             </tr>
           </thead>
           <tbody class="divide-y divide-brand-blue/5">
-            <tr *ngFor="let p of products()" class="hover:bg-brand-beige/20 transition-colors group">
+            <tr *ngFor="let p of paginatedProducts()" class="hover:bg-brand-beige/20 transition-colors group">
               <td class="px-6 py-4">
                 <div class="w-12 h-12 bg-gray-100 flex items-center justify-center overflow-hidden border border-brand-blue/10">
                   <img *ngIf="p.image_url" [src]="p.image_url" class="w-full h-full object-cover">
@@ -97,6 +121,37 @@ import { NotificationService } from '../../../core/services/notification.service
             </tr>
           </tbody>
         </table>
+
+        <div *ngIf="filteredProducts().length === 0" class="px-6 py-16 text-center">
+          <p class="text-2xl font-black italic tracking-tighter uppercase text-brand-blue/20">Aucun produit trouve</p>
+        </div>
+      </div>
+
+      <div *ngIf="filteredProducts().length > 0" class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p class="text-[10px] font-black uppercase tracking-[0.24em] text-gray-400">
+          Affichage {{ productRangeStart() }}-{{ productRangeEnd() }} sur {{ filteredProducts().length }} produits
+        </p>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            (click)="changeProductPage(-1)"
+            [disabled]="productPage() === 1"
+            class="border border-brand-blue/15 bg-white px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-brand-blue transition-colors hover:bg-brand-blue hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Precedent
+          </button>
+          <span class="px-3 text-[10px] font-black uppercase tracking-[0.24em] text-brand-blue">
+            {{ productPage() }} / {{ totalProductPages() }}
+          </span>
+          <button
+            type="button"
+            (click)="changeProductPage(1)"
+            [disabled]="productPage() === totalProductPages()"
+            class="border border-brand-blue/15 bg-white px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-brand-blue transition-colors hover:bg-brand-blue hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Suivant
+          </button>
+        </div>
       </div>
 
       <!-- Simple Product Modal -->
@@ -178,8 +233,26 @@ import { NotificationService } from '../../../core/services/notification.service
           </button>
         </div>
 
+        <div class="mb-6 border border-brand-blue/10 bg-white p-4 sm:p-5">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div class="w-full lg:max-w-xl">
+              <label class="mb-2 block text-[10px] font-black uppercase tracking-[0.3em] text-brand-brown">Recherche Categories</label>
+              <input
+                type="text"
+                [ngModel]="categorySearch()"
+                (ngModelChange)="updateCategorySearch($event)"
+                placeholder="Nom ou slug"
+                class="w-full border border-brand-blue/10 bg-brand-beige/20 px-4 py-3 font-bold text-brand-blue outline-none transition-colors focus:border-brand-blue"
+              >
+            </div>
+            <p class="text-[10px] font-black uppercase tracking-[0.24em] text-gray-400">
+              {{ filteredCategories().length }} categorie(s) • page {{ categoryPage() }} / {{ totalCategoryPages() }}
+            </p>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div *ngFor="let cat of categories()" class="group overflow-hidden border border-brand-blue/10 bg-white">
+          <div *ngFor="let cat of paginatedCategories()" class="group overflow-hidden border border-brand-blue/10 bg-white">
             <div class="flex items-center justify-between gap-3 p-3">
               <div class="flex min-w-0 items-center gap-4">
                 <div class="h-16 w-16 flex-shrink-0 bg-gray-100">
@@ -200,6 +273,37 @@ import { NotificationService } from '../../../core/services/notification.service
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div *ngIf="filteredCategories().length === 0" class="border border-dashed border-brand-blue/20 bg-white px-6 py-12 text-center">
+          <p class="text-lg font-black italic tracking-tighter uppercase text-brand-blue/30">Aucune categorie trouvee</p>
+        </div>
+
+        <div *ngIf="filteredCategories().length > 0" class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-[10px] font-black uppercase tracking-[0.24em] text-gray-400">
+            Affichage {{ categoryRangeStart() }}-{{ categoryRangeEnd() }} sur {{ filteredCategories().length }} categories
+          </p>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              (click)="changeCategoryPage(-1)"
+              [disabled]="categoryPage() === 1"
+              class="border border-brand-blue/15 bg-white px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-brand-blue transition-colors hover:bg-brand-blue hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Precedent
+            </button>
+            <span class="px-3 text-[10px] font-black uppercase tracking-[0.24em] text-brand-blue">
+              {{ categoryPage() }} / {{ totalCategoryPages() }}
+            </span>
+            <button
+              type="button"
+              (click)="changeCategoryPage(1)"
+              [disabled]="categoryPage() === totalCategoryPages()"
+              class="border border-brand-blue/15 bg-white px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-brand-blue transition-colors hover:bg-brand-blue hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Suivant
+            </button>
           </div>
         </div>
       </div>
@@ -251,6 +355,12 @@ export class AdminInventoryComponent implements OnInit {
 
   products = signal<Product[]>([]);
   categories = signal<Category[]>([]);
+  productSearch = signal('');
+  categorySearch = signal('');
+  productPage = signal(1);
+  categoryPage = signal(1);
+  readonly productPageSize = 8;
+  readonly categoryPageSize = 8;
   showModal = signal(false);
   editingId = signal<number | null>(null);
   imagePreview = signal<string | null>(null);
@@ -259,6 +369,45 @@ export class AdminInventoryComponent implements OnInit {
   catImagePreview = signal<string | null>(null);
   selectedCatFile: File | null = null;
   isSavingCategory = signal(false);
+
+  filteredProducts = computed(() => {
+    const query = this.productSearch().trim().toLowerCase();
+    if (!query) {
+      return this.products();
+    }
+
+    return this.products().filter(product =>
+      product.name.toLowerCase().includes(query) ||
+      product.slug.toLowerCase().includes(query) ||
+      product.category_name.toLowerCase().includes(query)
+    );
+  });
+
+  totalProductPages = computed(() => Math.max(1, Math.ceil(this.filteredProducts().length / this.productPageSize)));
+
+  paginatedProducts = computed(() => {
+    const start = (this.productPage() - 1) * this.productPageSize;
+    return this.filteredProducts().slice(start, start + this.productPageSize);
+  });
+
+  filteredCategories = computed(() => {
+    const query = this.categorySearch().trim().toLowerCase();
+    if (!query) {
+      return this.categories();
+    }
+
+    return this.categories().filter(category =>
+      category.name.toLowerCase().includes(query) ||
+      category.slug.toLowerCase().includes(query)
+    );
+  });
+
+  totalCategoryPages = computed(() => Math.max(1, Math.ceil(this.filteredCategories().length / this.categoryPageSize)));
+
+  paginatedCategories = computed(() => {
+    const start = (this.categoryPage() - 1) * this.categoryPageSize;
+    return this.filteredCategories().slice(start, start + this.categoryPageSize);
+  });
 
   formData = {
     name: '',
@@ -279,7 +428,53 @@ export class AdminInventoryComponent implements OnInit {
     this.productService.getCatalog(undefined, undefined, true).subscribe(res => {
       this.products.set(res.products);
       this.categories.set(res.categories);
+      this.productPage.set(1);
+      this.categoryPage.set(1);
     });
+  }
+
+  updateProductSearch(value: string) {
+    this.productSearch.set(value);
+    this.productPage.set(1);
+  }
+
+  updateCategorySearch(value: string) {
+    this.categorySearch.set(value);
+    this.categoryPage.set(1);
+  }
+
+  changeProductPage(direction: number) {
+    const nextPage = this.productPage() + direction;
+    this.productPage.set(Math.min(Math.max(1, nextPage), this.totalProductPages()));
+  }
+
+  changeCategoryPage(direction: number) {
+    const nextPage = this.categoryPage() + direction;
+    this.categoryPage.set(Math.min(Math.max(1, nextPage), this.totalCategoryPages()));
+  }
+
+  productRangeStart() {
+    if (this.filteredProducts().length === 0) {
+      return 0;
+    }
+
+    return (this.productPage() - 1) * this.productPageSize + 1;
+  }
+
+  productRangeEnd() {
+    return Math.min(this.productPage() * this.productPageSize, this.filteredProducts().length);
+  }
+
+  categoryRangeStart() {
+    if (this.filteredCategories().length === 0) {
+      return 0;
+    }
+
+    return (this.categoryPage() - 1) * this.categoryPageSize + 1;
+  }
+
+  categoryRangeEnd() {
+    return Math.min(this.categoryPage() * this.categoryPageSize, this.filteredCategories().length);
   }
 
   onFileSelected(event: any) {

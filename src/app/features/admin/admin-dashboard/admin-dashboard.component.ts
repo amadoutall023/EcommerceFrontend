@@ -3,13 +3,15 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AdminService, AdminStats } from '../../../core/services/admin.service';
 import { LucideAngularModule } from 'lucide-angular';
+import { BackButtonComponent } from '../../../shared/back-button/back-button.component';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule, BackButtonComponent],
   template: `
     <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 sm:py-10">
+      <app-back-button fallbackUrl="/" label="Retour accueil" class="mb-6 block"></app-back-button>
       <div class="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div class="max-w-2xl">
           <p class="mb-3 text-[10px] font-black uppercase tracking-[0.35em] text-brand-brown sm:text-xs">Gestion Administrative</p>

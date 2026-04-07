@@ -6,13 +6,15 @@ import { CartService } from '../../../core/services/cart.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { LucideAngularModule } from 'lucide-angular';
 import { NotificationService } from '../../../core/services/notification.service';
+import { BackButtonComponent } from '../../../shared/back-button/back-button.component';
 
 @Component({
   selector: 'app-cart-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, FormsModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule, FormsModule, BackButtonComponent],
   template: `
     <div class="max-w-7xl mx-auto px-4 py-8 md:py-16">
+      <app-back-button fallbackUrl="/products" label="Retour boutique" class="mb-6 block"></app-back-button>
       <h1 class="text-4xl md:text-6xl font-black italic tracking-tighter mb-8 md:mb-12 uppercase">VOTRE PANIER</h1>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-16" *ngIf="cart.cart().items.length > 0; else emptyCart">
