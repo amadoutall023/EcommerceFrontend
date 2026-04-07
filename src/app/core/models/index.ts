@@ -47,6 +47,7 @@ export interface CartItem {
     unit_price: number;
     selected_size?: string;
     selected_color?: string;
+    available_colors?: string[];
     subtotal: number;
 }
 

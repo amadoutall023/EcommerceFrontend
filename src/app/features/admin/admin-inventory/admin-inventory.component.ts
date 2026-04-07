@@ -202,12 +202,82 @@ import { BackButtonComponent } from '../../../shared/back-button/back-button.com
                 <input type="number" [(ngModel)]="formData.stock" name="stock" required class="w-full bg-brand-beige/30 border-2 border-transparent focus:border-brand-blue outline-none px-4 py-3 font-bold">
               </div>
               <div>
-                <label class="block text-xs font-black uppercase tracking-widest mb-2">Tailles (séparées par virgule)</label>
-                <input type="text" [(ngModel)]="formData.sizes" name="sizes" placeholder="S, M, L, XL" class="w-full bg-brand-beige/30 border-2 border-transparent focus:border-brand-blue outline-none px-4 py-3 font-bold">
+                <label class="block text-xs font-black uppercase tracking-widest mb-3">Tailles du produit</label>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    *ngFor="let size of sizeOptions"
+                    type="button"
+                    (click)="toggleSize(size)"
+                    class="border px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] transition-colors"
+                    [class.bg-brand-blue]="isSizeSelected(size)"
+                    [class.border-brand-blue]="isSizeSelected(size)"
+                    [class.text-white]="isSizeSelected(size)"
+                    [class.border-brand-blue/15]="!isSizeSelected(size)"
+                    [class.text-brand-blue]="!isSizeSelected(size)"
+                  >
+                    {{ size }}
+                  </button>
+                </div>
+
+                <div class="mt-4 flex gap-3">
+                  <input
+                    type="text"
+                    [(ngModel)]="customSize"
+                    name="customSize"
+                    placeholder="Ajouter une taille"
+                    class="flex-1 bg-brand-beige/30 border-2 border-transparent focus:border-brand-blue outline-none px-4 py-3 font-bold"
+                  >
+                  <button
+                    type="button"
+                    (click)="addCustomSize()"
+                    class="border border-brand-blue px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-brand-blue transition-colors hover:bg-brand-blue hover:text-white"
+                  >
+                    Ajouter
+                  </button>
+                </div>
+
+                <p class="mt-3 text-[10px] font-bold uppercase tracking-widest text-gray-400" *ngIf="selectedSizes().length > 0">
+                  Selection: <span class="text-brand-blue">{{ selectedSizes().join(', ') }}</span>
+                </p>
               </div>
               <div class="col-span-2">
-                <label class="block text-xs font-black uppercase tracking-widest mb-2">Couleurs (séparées par virgule)</label>
-                <input type="text" [(ngModel)]="formData.colors" name="colors" placeholder="Noir, Blanc, Bleu" class="w-full bg-brand-beige/30 border-2 border-transparent focus:border-brand-blue outline-none px-4 py-3 font-bold">
+                <label class="block text-xs font-black uppercase tracking-widest mb-3">Couleurs du produit</label>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    *ngFor="let color of colorOptions"
+                    type="button"
+                    (click)="toggleColor(color)"
+                    class="border px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] transition-colors"
+                    [class.bg-brand-blue]="isColorSelected(color)"
+                    [class.border-brand-blue]="isColorSelected(color)"
+                    [class.text-white]="isColorSelected(color)"
+                    [class.border-brand-blue/15]="!isColorSelected(color)"
+                    [class.text-brand-blue]="!isColorSelected(color)"
+                  >
+                    {{ color }}
+                  </button>
+                </div>
+
+                <div class="mt-4 flex gap-3">
+                  <input
+                    type="text"
+                    [(ngModel)]="customColor"
+                    name="customColor"
+                    placeholder="Ajouter une couleur"
+                    class="flex-1 bg-brand-beige/30 border-2 border-transparent focus:border-brand-blue outline-none px-4 py-3 font-bold"
+                  >
+                  <button
+                    type="button"
+                    (click)="addCustomColor()"
+                    class="border border-brand-blue px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-brand-blue transition-colors hover:bg-brand-blue hover:text-white"
+                  >
+                    Ajouter
+                  </button>
+                </div>
+
+                <p class="mt-3 text-[10px] font-bold uppercase tracking-widest text-gray-400" *ngIf="selectedColors().length > 0">
+                  Selection: <span class="text-brand-blue">{{ selectedColors().join(', ') }}</span>
+                </p>
               </div>
             </div>
 
@@ -365,10 +435,14 @@ export class AdminInventoryComponent implements OnInit {
   editingId = signal<number | null>(null);
   imagePreview = signal<string | null>(null);
   selectedFile: File | null = null;
+  customColor = '';
+  customSize = '';
 
   catImagePreview = signal<string | null>(null);
   selectedCatFile: File | null = null;
   isSavingCategory = signal(false);
+  readonly colorOptions = ['Noir', 'Blanc', 'Bleu', 'Rouge', 'Vert', 'Beige', 'Marron', 'Rose', 'Gris', 'Jaune'];
+  readonly sizeOptions = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '28', '30', '32', '34', '36', '38', '40', '42', '44'];
 
   filteredProducts = computed(() => {
     const query = this.productSearch().trim().toLowerCase();
@@ -501,6 +575,8 @@ export class AdminInventoryComponent implements OnInit {
     this.editingId.set(null);
     this.imagePreview.set(null);
     this.selectedFile = null;
+    this.customColor = '';
+    this.customSize = '';
     this.formData = {
       name: '',
       category_id: this.categories()[0]?.id || 0,
@@ -517,6 +593,8 @@ export class AdminInventoryComponent implements OnInit {
     this.editingId.set(p.id);
     this.imagePreview.set(p.image_url);
     this.selectedFile = null;
+    this.customColor = '';
+    this.customSize = '';
     this.formData = {
       name: p.name,
       category_id: p.category_id,
@@ -647,5 +725,69 @@ export class AdminInventoryComponent implements OnInit {
         });
       }
     });
+  }
+
+  selectedColors(): string[] {
+    return this.formData.colors
+      .split(',')
+      .map(color => color.trim())
+      .filter(Boolean);
+  }
+
+  isColorSelected(color: string): boolean {
+    return this.selectedColors().includes(color);
+  }
+
+  toggleColor(color: string) {
+    const nextColors = this.isColorSelected(color)
+      ? this.selectedColors().filter(selectedColor => selectedColor !== color)
+      : [...this.selectedColors(), color];
+
+    this.formData.colors = nextColors.join(', ');
+  }
+
+  addCustomColor() {
+    const color = this.customColor.trim();
+    if (!color) {
+      return;
+    }
+
+    if (!this.isColorSelected(color)) {
+      this.formData.colors = [...this.selectedColors(), color].join(', ');
+    }
+
+    this.customColor = '';
+  }
+
+  selectedSizes(): string[] {
+    return this.formData.sizes
+      .split(',')
+      .map(size => size.trim())
+      .filter(Boolean);
+  }
+
+  isSizeSelected(size: string): boolean {
+    return this.selectedSizes().includes(size);
+  }
+
+  toggleSize(size: string) {
+    const nextSizes = this.isSizeSelected(size)
+      ? this.selectedSizes().filter(selectedSize => selectedSize !== size)
+      : [...this.selectedSizes(), size];
+
+    this.formData.sizes = nextSizes.join(', ');
+  }
+
+  addCustomSize() {
+    const size = this.customSize.trim().toUpperCase();
+    if (!size) {
+      return;
+    }
+
+    if (!this.isSizeSelected(size)) {
+      this.formData.sizes = [...this.selectedSizes(), size].join(', ');
+    }
+
+    this.customSize = '';
   }
 }

@@ -7,6 +7,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { LucideAngularModule } from 'lucide-angular';
 import { NotificationService } from '../../../core/services/notification.service';
 import { BackButtonComponent } from '../../../shared/back-button/back-button.component';
+import { CartItem } from '../../../core/models';
 
 @Component({
   selector: 'app-cart-page',
@@ -36,6 +37,22 @@ import { BackButtonComponent } from '../../../shared/back-button/back-button.com
                 <span *ngIf="item.selected_color" class="text-[9px] font-black uppercase tracking-widest bg-gray-100 px-2 py-0.5 rounded text-gray-500">
                   Couleur: <span class="text-brand-blue">{{ item.selected_color }}</span>
                 </span>
+              </div>
+
+              <p *ngIf="otherColors(item).length > 0" class="mt-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                Autres couleurs:
+                <span class="text-brand-blue">{{ otherColors(item).join(', ') }}</span>
+              </p>
+
+              <div *ngIf="otherColors(item).length > 0" class="mt-3 flex flex-wrap gap-2">
+                <button
+                  *ngFor="let color of otherColors(item)"
+                  type="button"
+                  (click)="changeColor(item, color)"
+                  class="border border-brand-blue/15 bg-white px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-brand-blue transition-colors hover:bg-brand-blue hover:text-white"
+                >
+                  {{ color }}
+                </button>
               </div>
 
               <p class="text-brand-brown font-bold text-sm mt-2 tracking-tight">{{ item.unit_price | currency:'XOF' }}</p>
@@ -193,6 +210,17 @@ export class CartPageComponent implements OnInit {
     } else {
       this.cart.remove(itemId).subscribe();
     }
+  }
+
+  otherColors(item: CartItem): string[] {
+    return (item.available_colors ?? []).filter(color => color !== item.selected_color);
+  }
+
+  changeColor(item: CartItem, color: string) {
+    this.cart.updateVariant(item.id, item.quantity, item.selected_size, color).subscribe({
+      next: () => this.notification.success('Couleur du produit mise a jour.'),
+      error: () => this.notification.error('Impossible de changer la couleur pour le moment.')
+    });
   }
 
   onCheckout() {

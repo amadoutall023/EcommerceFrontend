@@ -70,6 +70,7 @@ export class CartService {
                     unit_price: product.price,
                     selected_size: selectedSize,
                     selected_color: selectedColor,
+                    available_colors: product.colors,
                     subtotal: product.price * quantity,
                 }
             ];
@@ -90,6 +91,59 @@ export class CartService {
                 ? { ...item, quantity, subtotal: item.unit_price * quantity }
                 : item
         );
+
+        this.setGuestCartItems(items);
+        return of({ success: true });
+    }
+
+    updateVariant(itemId: number, quantity: number, selectedSize?: string, selectedColor?: string): Observable<unknown> {
+        if (this.authService.isAuthenticated()) {
+            return this.http.put(`${environment.apiUrl}/cart/update`, {
+                item_id: itemId,
+                quantity,
+                selected_size: selectedSize,
+                selected_color: selectedColor
+            }).pipe(
+                tap(() => this.loadCart().subscribe())
+            );
+        }
+
+        const current = this.cartSignal();
+        const currentItem = current.items.find(item => item.id === itemId);
+        if (!currentItem) {
+            return of({ success: false });
+        }
+
+        const nextSize = selectedSize ?? currentItem.selected_size;
+        const nextColor = selectedColor ?? currentItem.selected_color;
+        const matchingItem = current.items.find(item =>
+            item.id !== itemId &&
+            item.product_id === currentItem.product_id &&
+            item.selected_size === nextSize &&
+            item.selected_color === nextColor
+        );
+
+        const items = matchingItem
+            ? current.items
+                .filter(item => item.id !== itemId)
+                .map(item => item.id === matchingItem.id
+                    ? {
+                        ...item,
+                        quantity: item.quantity + quantity,
+                        subtotal: (item.quantity + quantity) * item.unit_price,
+                    }
+                    : item)
+            : current.items.map(item =>
+                item.id === itemId
+                    ? {
+                        ...item,
+                        quantity,
+                        selected_size: nextSize,
+                        selected_color: nextColor,
+                        subtotal: item.unit_price * quantity,
+                    }
+                    : item
+            );
 
         this.setGuestCartItems(items);
         return of({ success: true });
