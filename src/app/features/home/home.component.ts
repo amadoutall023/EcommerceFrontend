@@ -110,24 +110,31 @@ import { NotificationService } from '../../core/services/notification.service';
           </a>
         </div>
 
-        <div class="flex flex-col gap-3 rounded-[1.75rem] border border-brand-blue/10 bg-brand-beige/35 p-4 md:flex-row md:items-center md:justify-between">
+        <div class="flex flex-col gap-4 rounded-[1.75rem] border border-brand-blue/10 bg-brand-beige/35 p-4">
           <div>
             <p class="text-[11px] font-black uppercase tracking-[0.28em] text-brand-brown">Filtre nouveautes</p>
             <p class="text-sm font-semibold text-brand-blue/70">Affiche les produits recents selon la categorie choisie.</p>
           </div>
 
-          <div class="relative min-w-full md:min-w-[280px]">
-            <select
-              [value]="selectedRecentCategoryId() ?? ''"
-              (change)="onRecentCategoryChange($any($event.target).value)"
-              class="w-full appearance-none rounded-full border border-brand-blue/15 bg-white px-5 py-3 pr-12 text-sm font-bold tracking-tight text-brand-blue outline-none transition focus:border-brand-blue"
+          <div class="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <button
+              type="button"
+              (click)="setRecentCategoryFilter(null)"
+              class="shrink-0 rounded-full border-2 px-5 py-3 text-sm font-bold tracking-tight transition-all"
+              [ngClass]="selectedRecentCategoryId() === null ? 'bg-brand-blue text-white border-brand-blue shadow-lg shadow-brand-blue/20' : 'bg-white text-brand-blue border-brand-blue/15 hover:border-brand-blue hover:bg-brand-blue/5'"
             >
-              <option value="">Toutes les categories</option>
-              <option *ngFor="let category of categories()" [value]="category.id">
+              Toutes les categories
+            </button>
+
+            <button
+              *ngFor="let category of categories()"
+              type="button"
+              (click)="setRecentCategoryFilter(category.id)"
+              class="shrink-0 rounded-full border-2 px-5 py-3 text-sm font-bold tracking-tight transition-all"
+              [ngClass]="selectedRecentCategoryId() === category.id ? 'bg-brand-blue text-white border-brand-blue shadow-lg shadow-brand-blue/20' : 'bg-white text-brand-blue border-brand-blue/15 hover:border-brand-blue hover:bg-brand-blue/5'"
+            >
                 {{ category.name }}
-              </option>
-            </select>
-            <lucide-angular name="chevron-down" class="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-brand-brown"></lucide-angular>
+            </button>
           </div>
         </div>
       </div>
@@ -427,7 +434,7 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  onRecentCategoryChange(value: string) {
-    this.selectedRecentCategoryId.set(value ? parseInt(value, 10) : null);
+  setRecentCategoryFilter(categoryId: number | null) {
+    this.selectedRecentCategoryId.set(categoryId);
   }
 }
