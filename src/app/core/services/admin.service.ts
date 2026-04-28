@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Product, Order, Category } from '../models';
+import { map } from 'rxjs';
 
 export interface AdminStats {
     total_sales: number;
@@ -29,6 +30,12 @@ export class AdminService {
 
     updateOrderStatus(orderId: number, status: OrderStatus) {
         return this.http.put(`${this.apiUrl}/orders/${orderId}/status`, { status });
+    }
+
+    deleteOrder(orderId: number) {
+        return this.http.delete<{ message: string }>(`${this.apiUrl}/orders/${orderId}`).pipe(
+            map(res => res.message)
+        );
     }
 
     createProduct(product: FormData) {

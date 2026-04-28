@@ -19,22 +19,46 @@ import { BackButtonComponent } from '../../../shared/back-button/back-button.com
       <div class="mb-12">
         <app-back-button fallbackUrl="/" label="Retour accueil" class="mb-6 block"></app-back-button>
         <h1 class="text-5xl font-black italic tracking-tighter mb-4">NOTRE COLLECTION</h1>
-        <div class="flex flex-wrap gap-3">
+        <div class="rounded-[2rem] border border-brand-blue/10 bg-brand-beige/40 p-3 md:p-4">
+          <div class="mb-3 flex items-center justify-between gap-4">
+            <div>
+              <p class="text-[11px] font-black uppercase tracking-[0.28em] text-brand-brown">Filtres categories</p>
+            </div>
+            <button
+              *ngIf="activeCategoryId() !== null"
+              (click)="filterByCategory(null)"
+              class="shrink-0 rounded-full border border-brand-blue/15 px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-brand-blue transition hover:border-brand-blue hover:bg-brand-blue hover:text-white"
+            >
+              Reinitialiser
+            </button>
+          </div>
+
+          <div class="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <button 
             (click)="filterByCategory(null)"
-            class="px-6 py-2 border-2 transition-all font-bold tracking-tight"
-            [ngClass]="activeCategoryId() === null ? 'bg-brand-blue text-white border-brand-blue' : 'text-brand-blue border-brand-blue/20 hover:border-brand-blue'"
+            class="shrink-0 rounded-full border-2 px-5 py-3 text-sm transition-all font-bold tracking-tight"
+            [ngClass]="activeCategoryId() === null ? 'bg-brand-blue text-white border-brand-blue shadow-lg shadow-brand-blue/20' : 'bg-white text-brand-blue border-brand-blue/15 hover:border-brand-blue hover:bg-brand-blue/5'"
           >
-            TOUT
+            Toutes les categories
           </button>
           <button 
             *ngFor="let cat of categories()" 
             (click)="filterByCategory(cat.id)"
-            class="px-6 py-2 border-2 transition-all font-bold tracking-tight"
-            [ngClass]="activeCategoryId() === cat.id ? 'bg-brand-blue text-white border-brand-blue' : 'text-brand-blue border-brand-blue/20 hover:border-brand-blue'"
+            class="shrink-0 rounded-full border-2 px-5 py-3 text-sm transition-all font-bold tracking-tight"
+            [ngClass]="activeCategoryId() === cat.id ? 'bg-brand-blue text-white border-brand-blue shadow-lg shadow-brand-blue/20' : 'bg-white text-brand-blue border-brand-blue/15 hover:border-brand-blue hover:bg-brand-blue/5'"
           >
             {{ cat.name | uppercase }}
           </button>
+        </div>
+        </div>
+
+        <div class="mt-6 flex items-center justify-between gap-4 border-b border-brand-blue/10 pb-4">
+          <p class="text-sm font-bold uppercase tracking-[0.2em] text-brand-brown">
+            {{ products().length }} produits affiches
+          </p>
+          <a routerLink="/" fragment="categories" class="text-sm font-black uppercase tracking-[0.18em] text-brand-blue transition hover:text-brand-brown">
+            Voir les 4 categories en vitrine
+          </a>
         </div>
       </div>
 
@@ -115,6 +139,9 @@ export class ProductListComponent implements OnInit {
 
   filterByCategory(id: number | null) {
     this.activeCategoryId.set(id);
-    this.loadData();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: id ? { category_id: id } : {},
+    });
   }
 }

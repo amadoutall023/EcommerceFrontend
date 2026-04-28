@@ -4,6 +4,7 @@ import { AdminService, OrderStatus } from '../../../core/services/admin.service'
 import { Order } from '../../../core/models';
 import { LucideAngularModule } from 'lucide-angular';
 import { BackButtonComponent } from '../../../shared/back-button/back-button.component';
+import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-admin-orders',
@@ -56,17 +57,27 @@ import { BackButtonComponent } from '../../../shared/back-button/back-button.com
               {{ statusLabel(order.status) }}
             </span>
 
-            <select
-              (change)="updateStatus(order.id, $any($event.target).value)"
-              [value]="order.status"
-              class="min-w-0 bg-brand-beige/30 px-3 py-2 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-1 focus:ring-brand-blue"
-            >
-              <option value="pending">En attente</option>
-              <option value="paid">Payee</option>
-              <option value="shipped">Expediee</option>
-              <option value="delivered">Livree</option>
-              <option value="cancelled">Annulee</option>
-            </select>
+            <div class="flex items-center gap-2">
+              <select
+                (change)="updateStatus(order.id, $any($event.target).value)"
+                [value]="order.status"
+                class="min-w-0 bg-brand-beige/30 px-3 py-2 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-1 focus:ring-brand-blue"
+              >
+                <option value="pending">En attente</option>
+                <option value="paid">Payee</option>
+                <option value="shipped">Expediee</option>
+                <option value="delivered">Livree</option>
+                <option value="cancelled">Annulee</option>
+              </select>
+
+              <button
+                type="button"
+                class="border border-red-200 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-red-600 transition hover:bg-red-50"
+                (click)="deleteOrder(order.id)"
+              >
+                Supprimer
+              </button>
+            </div>
           </div>
 
           <div *ngIf="selectedOrderId() === order.id" class="mt-5 space-y-5 border-t border-brand-blue/10 pt-5">
@@ -176,17 +187,27 @@ import { BackButtonComponent } from '../../../shared/back-button/back-button.com
                 <lucide-angular [name]="selectedOrderId() === order.id ? 'chevron-up' : 'chevron-down'" class="w-3 h-3 ml-2 inline opacity-20"></lucide-angular>
               </td>
               <td class="px-6 py-4 text-right" (click)="$event.stopPropagation()">
-                <select 
-                  (change)="updateStatus(order.id, $any($event.target).value)"
-                  [value]="order.status"
-                  class="bg-brand-beige/30 border-none text-[10px] font-black uppercase tracking-widest px-2 py-1 outline-none focus:ring-1 focus:ring-brand-blue"
-                >
-                  <option value="pending">En attente</option>
-                  <option value="paid">Payee</option>
-                  <option value="shipped">Expediee</option>
-                  <option value="delivered">Livree</option>
-                  <option value="cancelled">Annulee</option>
-                </select>
+                <div class="flex justify-end gap-2">
+                  <select 
+                    (change)="updateStatus(order.id, $any($event.target).value)"
+                    [value]="order.status"
+                    class="bg-brand-beige/30 border-none text-[10px] font-black uppercase tracking-widest px-2 py-1 outline-none focus:ring-1 focus:ring-brand-blue"
+                  >
+                    <option value="pending">En attente</option>
+                    <option value="paid">Payee</option>
+                    <option value="shipped">Expediee</option>
+                    <option value="delivered">Livree</option>
+                    <option value="cancelled">Annulee</option>
+                  </select>
+
+                  <button
+                    type="button"
+                    class="border border-red-200 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-red-600 transition hover:bg-red-50"
+                    (click)="deleteOrder(order.id)"
+                  >
+                    Supprimer
+                  </button>
+                </div>
               </td>
             </tr>
             <!-- Order Details Expanded -->
@@ -240,6 +261,7 @@ import { BackButtonComponent } from '../../../shared/back-button/back-button.com
 })
 export class AdminOrdersComponent implements OnInit {
   private adminService = inject(AdminService);
+  private notification = inject(NotificationService);
   orders = signal<Order[]>([]);
   selectedOrderId = signal<number | null>(null);
 
@@ -265,6 +287,30 @@ export class AdminOrdersComponent implements OnInit {
 
     this.adminService.updateOrderStatus(id, status).subscribe(() => {
       this.loadOrders();
+    });
+  }
+
+  deleteOrder(id: number) {
+    this.notification.confirm(
+      `Cette commande sera supprimee et les stocks seront remis a jour.`
+    ).then(result => {
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      this.adminService.deleteOrder(id).subscribe({
+        next: (message) => {
+          if (this.selectedOrderId() === id) {
+            this.selectedOrderId.set(null);
+          }
+
+          this.notification.success(message);
+          this.loadOrders();
+        },
+        error: () => {
+          this.notification.error('Impossible de supprimer la commande.');
+        }
+      });
     });
   }
 

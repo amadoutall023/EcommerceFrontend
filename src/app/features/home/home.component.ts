@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ProductService } from '../../core/services/product.service';
@@ -58,8 +58,8 @@ import { NotificationService } from '../../core/services/notification.service';
         <a routerLink="/products" class="text-brand-brown font-bold border-b-2 border-brand-brown pb-1 hover:text-brand-blue hover:border-brand-blue transition-all">Tout voir</a>
       </div>
 
-      <div *ngIf="isLoadingCategories()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div *ngFor="let item of skeletonCategories" class="relative aspect-[4/5] overflow-hidden rounded-2xl bg-brand-blue/[0.04]">
+      <div *ngIf="isLoadingCategories()" class="flex gap-4 overflow-x-auto pb-2 lg:grid lg:grid-cols-4 lg:gap-8 lg:overflow-visible [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div *ngFor="let item of skeletonCategories" class="relative aspect-[4/5] w-[72vw] min-w-[72vw] overflow-hidden rounded-2xl bg-brand-blue/[0.04] sm:w-[46vw] sm:min-w-[46vw] lg:w-auto lg:min-w-0">
           <div class="absolute inset-0 animate-pulse bg-gradient-to-br from-brand-blue/10 via-brand-beige/30 to-brand-brown/10"></div>
           <div class="absolute inset-x-0 bottom-0 p-8">
             <div class="mb-3 h-3 w-20 rounded-full bg-white/70"></div>
@@ -72,8 +72,8 @@ import { NotificationService } from '../../core/services/notification.service';
         <p class="text-sm font-bold uppercase tracking-[0.24em] text-brand-brown">Les catégories arrivent bientôt.</p>
       </div>
 
-      <div *ngIf="!isLoadingCategories() && categories().length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div *ngFor="let cat of categories(); let i = index" class="group relative aspect-[4/5] overflow-hidden bg-gray-100 cursor-pointer rounded-2xl transition-all duration-300 hover:shadow-2xl animate-fade-in-up" [style.animation-delay]="i * 100 + 'ms'" [routerLink]="['/products']" [queryParams]="{category_id: cat.id}">
+      <div *ngIf="!isLoadingCategories() && categories().length > 0" class="flex gap-4 overflow-x-auto pb-2 lg:grid lg:grid-cols-4 lg:gap-8 lg:overflow-visible [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div *ngFor="let cat of featuredCategories(); let i = index" class="group relative aspect-[4/5] w-[72vw] min-w-[72vw] overflow-hidden rounded-2xl bg-gray-100 cursor-pointer transition-all duration-300 hover:shadow-2xl animate-fade-in-up sm:w-[46vw] sm:min-w-[46vw] lg:w-auto lg:min-w-0" [style.animation-delay]="i * 100 + 'ms'" [routerLink]="['/products']" [queryParams]="{category_id: cat.id}">
           <!-- Image Layer -->
           <img [src]="cat.image_url" [alt]="cat.name" loading="eager" class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
           
@@ -84,7 +84,7 @@ import { NotificationService } from '../../core/services/notification.service';
           <div class="absolute inset-0 p-8 flex flex-col justify-end">
             <div class="translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
               <p class="text-brand-beige text-[10px] font-bold tracking-[0.3em] mb-2 uppercase opacity-90">Collection</p>
-              <h4 class="text-white text-3xl font-black tracking-tighter uppercase leading-none mb-4">{{ cat.name }}</h4>
+              <h4 class="text-white text-xl md:text-3xl font-black tracking-tighter uppercase leading-none mb-4">{{ cat.name }}</h4>
               
               <div class="flex items-center text-white text-xs font-bold tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-all duration-300">
                 <span>Explorer</span>
@@ -98,15 +98,38 @@ import { NotificationService } from '../../core/services/notification.service';
 
     <!-- Recent Products Section -->
     <section id="recent-products" class="max-w-7xl mx-auto px-4 py-12 md:py-24 border-t border-gray-100">
-      <div class="flex flex-col md:flex-row justify-between items-center md:items-end mb-8 md:mb-16 space-y-4 md:space-y-0 text-center md:text-left">
-        <div>
-          <h3 class="text-brand-brown font-bold tracking-widest uppercase text-sm mb-2">Les Nouveautés</h3>
-          <h2 class="text-4xl md:text-5xl font-black italic tracking-tighter text-brand-blue uppercase">FRAÎCHEMENT DÉBARQUÉS</h2>
+      <div class="mb-8 md:mb-16 space-y-6">
+        <div class="flex flex-col md:flex-row justify-between items-center md:items-end space-y-4 md:space-y-0 text-center md:text-left">
+          <div>
+            <h3 class="text-brand-brown font-bold tracking-widest uppercase text-sm mb-2">Les Nouveautés</h3>
+            <h2 class="text-4xl md:text-5xl font-black italic tracking-tighter text-brand-blue uppercase">FRAÎCHEMENT DÉBARQUÉS</h2>
+          </div>
+          <a routerLink="/products" class="group flex items-center space-x-2 text-brand-blue font-black uppercase tracking-widest text-xs border-b-2 border-brand-blue pb-1 hover:text-brand-brown hover:border-brand-brown transition-all">
+            <span>Voir toute la boutique</span>
+            <lucide-angular name="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></lucide-angular>
+          </a>
         </div>
-        <a routerLink="/products" class="group flex items-center space-x-2 text-brand-blue font-black uppercase tracking-widest text-xs border-b-2 border-brand-blue pb-1 hover:text-brand-brown hover:border-brand-brown transition-all">
-          <span>Voir toute la boutique</span>
-          <lucide-angular name="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></lucide-angular>
-        </a>
+
+        <div class="flex flex-col gap-3 rounded-[1.75rem] border border-brand-blue/10 bg-brand-beige/35 p-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-[11px] font-black uppercase tracking-[0.28em] text-brand-brown">Filtre nouveautes</p>
+            <p class="text-sm font-semibold text-brand-blue/70">Affiche les produits recents selon la categorie choisie.</p>
+          </div>
+
+          <div class="relative min-w-full md:min-w-[280px]">
+            <select
+              [value]="selectedRecentCategoryId() ?? ''"
+              (change)="onRecentCategoryChange($any($event.target).value)"
+              class="w-full appearance-none rounded-full border border-brand-blue/15 bg-white px-5 py-3 pr-12 text-sm font-bold tracking-tight text-brand-blue outline-none transition focus:border-brand-blue"
+            >
+              <option value="">Toutes les categories</option>
+              <option *ngFor="let category of categories()" [value]="category.id">
+                {{ category.name }}
+              </option>
+            </select>
+            <lucide-angular name="chevron-down" class="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-brand-brown"></lucide-angular>
+          </div>
+        </div>
       </div>
 
       <div *ngIf="isLoadingProducts()" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-8 md:gap-y-12">
@@ -123,12 +146,12 @@ import { NotificationService } from '../../core/services/notification.service';
         </div>
       </div>
 
-      <div *ngIf="!isLoadingProducts() && recentProducts().length === 0" class="rounded-3xl border border-brand-blue/10 bg-brand-beige/30 px-6 py-10 text-center">
+      <div *ngIf="!isLoadingProducts() && filteredRecentProducts().length === 0" class="rounded-3xl border border-brand-blue/10 bg-brand-beige/30 px-6 py-10 text-center">
         <p class="text-sm font-bold uppercase tracking-[0.24em] text-brand-brown">Aucun produit à afficher pour le moment.</p>
       </div>
 
-      <div *ngIf="!isLoadingProducts() && recentProducts().length > 0" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-8 md:gap-y-12">
-        <div *ngFor="let product of recentProducts(); let i = index" 
+      <div *ngIf="!isLoadingProducts() && filteredRecentProducts().length > 0" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-8 md:gap-y-12">
+        <div *ngFor="let product of filteredRecentProducts(); let i = index" 
              class="group cursor-pointer animate-fade-in-up" 
              [style.animation-delay]="i * 100 + 'ms'"
              [routerLink]="['/products', product.id]">
@@ -340,7 +363,18 @@ export class HomeComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   categories = signal<Category[]>([]);
+  featuredCategories = computed(() => this.categories().slice(0, 4));
   recentProducts = signal<Product[]>([]);
+  selectedRecentCategoryId = signal<number | null>(null);
+  filteredRecentProducts = computed(() => {
+    const categoryId = this.selectedRecentCategoryId();
+
+    if (categoryId === null) {
+      return this.recentProducts();
+    }
+
+    return this.recentProducts().filter(product => product.category_id === categoryId);
+  });
   isLoadingCategories = signal(true);
   isLoadingProducts = signal(true);
   subscribeEmail = '';
@@ -391,5 +425,9 @@ export class HomeComponent implements OnInit {
         this.notification.error('Erreur lors de l\'inscription. Veuillez réessayer.');
       }
     });
+  }
+
+  onRecentCategoryChange(value: string) {
+    this.selectedRecentCategoryId.set(value ? parseInt(value, 10) : null);
   }
 }
