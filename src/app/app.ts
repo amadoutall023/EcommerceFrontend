@@ -6,8 +6,9 @@ import { FooterComponent } from './layout/footer/footer.component';
 import { LucideAngularModule } from 'lucide-angular';
 import { Category, Product } from './core/models';
 import { ProductService } from './core/services/product.service';
+import { firstValueFrom } from 'rxjs';
 
-type ChatAction = 'oversize' | 'categories' | 'track-order' | 'contact' | 'menu';
+type ChatAction = 'oversize' | 'categories' | 'track-order' | 'contact' | 'menu' | 'orders' | 'support-whatsapp';
 
 type ChatMessage =
   | { role: 'bot' | 'user'; type: 'text'; content: string }
@@ -177,6 +178,7 @@ export class App {
   private readonly products = signal<Product[]>([]);
   private hasLoadedChatData = false;
   private hasBootstrappedChat = false;
+  private chatDataRequest?: Promise<void>;
 
   @HostListener('window:scroll')
   onWindowScroll(): void {
@@ -206,7 +208,7 @@ export class App {
     }
   }
 
-  protected handleChatAction(action: ChatAction, label: string): void {
+  protected async handleChatAction(action: ChatAction, label: string): Promise<void> {
     this.appendMessage({ role: 'user', type: 'text', content: label });
 
     if (action === 'menu') {
@@ -214,7 +216,29 @@ export class App {
       return;
     }
 
+    if (action === 'orders') {
+      this.appendMessage({
+        role: 'bot',
+        type: 'text',
+        content: 'J ouvre la page de suivi de commande. Si tu n es pas encore connecte, l application te demandera de te connecter.',
+      });
+      this.router.navigate(['/orders']);
+      return;
+    }
+
+    if (action === 'support-whatsapp') {
+      this.appendMessage({
+        role: 'bot',
+        type: 'text',
+        content: 'J ouvre WhatsApp avec le service client TaTrend au +221 78 454 11 51.',
+      });
+      window.open('https://wa.me/221784541151', '_blank', 'noopener,noreferrer');
+      return;
+    }
+
     if (action === 'oversize') {
+      await this.ensureChatDataLoaded();
+
       const oversizeProducts = this.products().filter(product => {
         const haystack = `${product.name} ${product.category_name} ${product.description}`.toLowerCase();
         return haystack.includes('oversize');
@@ -236,6 +260,17 @@ export class App {
     }
 
     if (action === 'categories') {
+      await this.ensureChatDataLoaded();
+
+      if (this.categories().length === 0) {
+        this.appendMessage({
+          role: 'bot',
+          type: 'text',
+          content: 'Je n ai pas encore reussi a charger les categories. Reessaie dans un instant.',
+        });
+        return;
+      }
+
       this.appendMessage({
         role: 'bot',
         type: 'categories',
@@ -249,13 +284,13 @@ export class App {
       this.appendMessage({
         role: 'bot',
         type: 'options',
-        content: 'Pour suivre ta commande, connecte-toi puis ouvre ton historique de commandes.',
+        content: 'Pour suivre ta commande, ouvre ton historique. Si tu n es pas connecte, on te redirigera vers la connexion.',
         options: [
-          { label: 'Retour au menu', action: 'menu' },
+          { label: 'Ouvrir mes commandes', action: 'orders' },
           { label: 'Contacter le support', action: 'contact' },
+          { label: 'Menu principal', action: 'menu' },
         ],
       });
-      setTimeout(() => this.router.navigate(['/orders']), 250);
       return;
     }
 
@@ -263,8 +298,9 @@ export class App {
       this.appendMessage({
         role: 'bot',
         type: 'options',
-        content: 'Tu peux contacter le service client pour une aide rapide sur WhatsApp, email ou suivi de commande.',
+        content: 'Tu peux contacter le service client TaTrend sur WhatsApp au +221 78 454 11 51 pour une aide rapide.',
         options: [
+          { label: 'Ouvrir WhatsApp', action: 'support-whatsapp' },
           { label: 'Voir les categories', action: 'categories' },
           { label: 'Menu principal', action: 'menu' },
         ],
@@ -301,20 +337,31 @@ export class App {
     this.scrollChatToBottom();
   }
 
-  private ensureChatDataLoaded(): void {
+  private async ensureChatDataLoaded(): Promise<void> {
     if (this.hasLoadedChatData) {
-      return;
+      return Promise.resolve();
     }
 
-    this.hasLoadedChatData = true;
+    if (!this.chatDataRequest) {
+      this.chatDataRequest = Promise.all([
+        firstValueFrom(this.productService.getCategories()),
+        firstValueFrom(this.productService.getCatalog()),
+      ]).then(([categories, data]) => {
+        this.categories.set(categories);
+        this.products.set(data.products);
+        this.hasLoadedChatData = true;
+      }).catch(() => {
+        this.appendMessage({
+          role: 'bot',
+          type: 'text',
+          content: 'Je n ai pas reussi a charger les infos du chat pour le moment. Verifie que le backend est bien accessible puis reessaie.',
+        });
+      }).finally(() => {
+        this.chatDataRequest = undefined;
+      });
+    }
 
-    this.productService.getCategories().subscribe({
-      next: (categories) => this.categories.set(categories),
-    });
-
-    this.productService.getCatalog().subscribe({
-      next: (data) => this.products.set(data.products),
-    });
+    await this.chatDataRequest;
   }
 
   private scrollChatToBottom(): void {

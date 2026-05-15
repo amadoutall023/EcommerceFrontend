@@ -101,19 +101,19 @@ import { NotificationService } from '../../core/services/notification.service';
       <div class="mb-8 md:mb-16 space-y-6">
         <div class="flex flex-col md:flex-row justify-between items-center md:items-end space-y-4 md:space-y-0 text-center md:text-left">
           <div>
-            <h3 class="text-brand-brown font-bold tracking-widest uppercase text-sm mb-2">Les Nouveautés</h3>
-            <h2 class="text-4xl md:text-5xl font-black italic tracking-tighter text-brand-blue uppercase">FRAÎCHEMENT DÉBARQUÉS</h2>
+            <h3 class="text-brand-brown font-bold tracking-widest uppercase text-sm mb-2">Notre sélection</h3>
+            <h2 class="text-4xl md:text-5xl font-black italic tracking-tighter text-brand-blue uppercase">NOS PRODUITS</h2>
           </div>
           <a routerLink="/products" class="group flex items-center space-x-2 text-brand-blue font-black uppercase tracking-widest text-xs border-b-2 border-brand-blue pb-1 hover:text-brand-brown hover:border-brand-brown transition-all">
-            <span>Voir toute la boutique</span>
+            <span>Voir tout le catalogue</span>
             <lucide-angular name="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></lucide-angular>
           </a>
         </div>
 
         <div class="flex flex-col gap-4 rounded-[1.75rem] border border-brand-blue/10 bg-brand-beige/35 p-4">
           <div>
-            <p class="text-[11px] font-black uppercase tracking-[0.28em] text-brand-brown">Filtre nouveautes</p>
-            <p class="text-sm font-semibold text-brand-blue/70">Affiche les produits recents selon la categorie choisie.</p>
+            <p class="text-[11px] font-black uppercase tracking-[0.28em] text-brand-brown">Filtrer par catégorie</p>
+            <p class="text-sm font-semibold text-brand-blue/70">Affiche les produits disponibles selon la catégorie choisie.</p>
           </div>
 
           <div class="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
@@ -123,7 +123,7 @@ import { NotificationService } from '../../core/services/notification.service';
               class="shrink-0 rounded-full border-2 px-5 py-3 text-sm font-bold tracking-tight transition-all"
               [ngClass]="selectedRecentCategoryId() === null ? 'bg-brand-blue text-white border-brand-blue shadow-lg shadow-brand-blue/20' : 'bg-white text-brand-blue border-brand-blue/15 hover:border-brand-blue hover:bg-brand-blue/5'"
             >
-              Toutes les categories
+              Tous les produits
             </button>
 
             <button
@@ -154,7 +154,7 @@ import { NotificationService } from '../../core/services/notification.service';
       </div>
 
       <div *ngIf="!isLoadingProducts() && filteredRecentProducts().length === 0" class="rounded-3xl border border-brand-blue/10 bg-brand-beige/30 px-6 py-10 text-center">
-        <p class="text-sm font-bold uppercase tracking-[0.24em] text-brand-brown">Aucun produit à afficher pour le moment.</p>
+        <p class="text-sm font-bold uppercase tracking-[0.24em] text-brand-brown">Aucun produit trouvé pour cette catégorie.</p>
       </div>
 
       <div *ngIf="!isLoadingProducts() && filteredRecentProducts().length > 0" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-8 md:gap-y-12">
@@ -404,7 +404,7 @@ export class HomeComponent implements OnInit {
 
     this.productService.getCatalog().subscribe({
       next: (res) => {
-        this.recentProducts.set(res.products.slice(0, 8));
+        this.recentProducts.set(res.products);
         this.isLoadingProducts.set(false);
         this.cdr.detectChanges();
       },
